@@ -1,0 +1,4 @@
+.build/
+.swiftpm/
+Purr.app/
+.DS_Store
