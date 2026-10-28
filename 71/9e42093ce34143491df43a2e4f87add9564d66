@@ -1,0 +1,43 @@
+Sources/Purr/SystemStats.swift
+  s_666590a02297d0::t_e62fc841e2fb61 1-51
+build.sh
+  s_54f2f44bf9672f::t_1eab9a80603377 1-31
+Sources/Purr/PurrApp.swift
+  s_54f2f44bf9672f::t_94327ba1c12583 1-16
+Sources/Purr/PurrModel.swift
+  s_666590a02297d0::t_ac5bd11d2d090a 1-206
+Sources/Purr/PurrPanel.swift
+  s_666590a02297d0::t_826a94e8675676 1-293
+Package.swift
+  s_666590a02297d0::t_301dd9b949823b 1-10
+Sources/Purr/CatFace.swift
+  s_666590a02297d0::t_01b5df462b1f6f 1-220
+.gitignore
+  s_666590a02297d0::t_b25d576b0e1b0a 1-4
+README.md
+  s_666590a02297d0::t_a21e59672488ed 1-161
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "719e42093ce34143491df43a2e4f87add9564d66",
+  "prompts": {},
+  "sessions": {
+    "s_54f2f44bf9672f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d564b255-3e50-460c-a3ac-c259ffe8673b",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "chaipaphat.kae <chaipaphat.kae@axonstech.com>"
+    },
+    "s_666590a02297d0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ce2ac943-6a56-4a1d-910c-876ef5122b01",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "chaipaphat.kae <chaipaphat.kae@axonstech.com>"
+    }
+  }
+}
