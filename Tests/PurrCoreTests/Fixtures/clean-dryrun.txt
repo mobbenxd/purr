@@ -1,0 +1,8 @@
+➤ Large files
+  ⊙ Docker storage · Images 2.525GB
+
+======================================================================
+Dry run complete - no changes made
+Potential space: 70.5MB | Items: 16 | Categories: 3
+Detailed file list: ~/.config/mole/clean-list.txt
+======================================================================

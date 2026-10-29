@@ -1,0 +1,5 @@
+✓ [DRY RUN] ~/projects/web/node_modules, 75.6MB
+✓ [DRY RUN] ~/projects/app/dist, 475KB
+
+Dry run incomplete - no changes made
+Would free approximately: 375.9MB | Items: 9 | Free: 16.64GB
