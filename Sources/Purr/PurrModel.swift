@@ -72,6 +72,8 @@ final class PurrModel: ObservableObject {
     var onSniffResult: ((Int64) -> Void)?
     /// Fired before a task starts, so background work can step aside.
     var onTaskStart: (() -> Void)?
+    /// Fired when a task is handed to Terminal.
+    var onTerminalTask: ((CatTask) -> Void)?
 
     private var log = LogBuffer()
     private var flushScheduled = false
@@ -98,6 +100,7 @@ final class PurrModel: ObservableObject {
         guard let mo = moPath, !isRunning else { return }
         if !task.inApp {
             openInTerminal(mo: mo, args: task.args)
+            onTerminalTask?(task)
             return
         }
         if let message = task.confirm, !confirm(title: "\(task.emoji) \(task.title)?", message: message) {

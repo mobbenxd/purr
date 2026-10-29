@@ -11,6 +11,17 @@ public enum MoleCLI {
         candidates.first { FileManager.default.isExecutableFile(atPath: $0) }
     }
 
+    /// Identifies the installed copy of `mo`: changes when Homebrew (or Mole's
+    /// own installer) replaces it, even though `mo` keeps the same path.
+    /// `nil` while nothing is there, e.g. halfway through an upgrade.
+    public static func installStamp(_ mo: String) -> String? {
+        let real = URL(fileURLWithPath: mo).resolvingSymlinksInPath().path
+        guard let modified = (try? FileManager.default.attributesOfItem(atPath: real))?[.modificationDate] as? Date else {
+            return nil
+        }
+        return "\(real)@\(modified.timeIntervalSince1970)"
+    }
+
     public static var shellPath: String {
         "/opt/homebrew/bin:/usr/local/bin:\(NSHomeDirectory())/.local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
     }
