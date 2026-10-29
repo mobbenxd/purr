@@ -21,18 +21,25 @@ Purr คือหน้าตาแบบกดง่ายๆ (GUI) ที่�
 
 | | สิ่งที่เห็น / ปุ่ม | คำสั่งที่รันจริง | หมายเหตุ |
 |---|---|---|---|
-| 🐱 | หน้าแมว + คะแนนสุขภาพ | – | อารมณ์เปลี่ยนตามสภาพเครื่อง คลิกเพื่อลูบหัวได้ |
-| 📊 | CPU / แรม / ดิสก์ว่าง | – | อัปเดตทุก 2 วินาที |
+| 🐱 | หน้าแมว + คะแนนสุขภาพ | `mo status` | แมวในแผงและบนแถบเมนูเปลี่ยนอารมณ์ตามสภาพเครื่อง คลิกเพื่อลูบหัวได้ |
+| 📊 | CPU / แรม / ดิสก์ว่าง | `mo status --watch` | กดที่ตัวเลขเพื่อดู swap, แบตเตอรี่, อุณหภูมิ และโปรแกรมที่กิน CPU มากสุด |
 | 👃 | **ดมก่อน** | `mo clean --dry-run` | ดูอย่างเดียว ไม่ลบอะไร |
 | 🧹 | **เลียขน** | `mo clean` | ลบแคช/ล็อก/ถังขยะ **ถาวร** (ถามยืนยันก่อน) |
 | 🧘 | **ยืดเส้น** | `mo optimize` | รีเฟรช DNS, QuickLook, ไอคอน ฯลฯ (ถามยืนยันก่อน) |
-| 📦 | **คุ้ยโปรเจกต์** | `mo purge --dry-run` | หา `node_modules`, `build`, `dist` ที่ลบได้ |
-| 🗑️ | ถอนแอป | `mo uninstall` | เปิดใน Terminal |
-| 🔎 | สำรวจดิสก์ | `mo analyze` | เปิดใน Terminal |
-| 💿 | ไฟล์ติดตั้ง | `mo installer` | เปิดใน Terminal |
-| 📜 | ประวัติ | `mo history` | เปิดใน Terminal |
+| 📦 | **คุ้ยโปรเจกต์** | `mo purge --dry-run` | หา `node_modules`, `build`, `dist` ที่ลบได้ แล้วกด **ลบที่เจอทั้งหมด** (`mo purge --yes`) ต่อได้เลย |
+| 🕘 | ประวัติ | `mo history --json` | ดูว่าแต่ละครั้งได้พื้นที่คืนเท่าไร |
+| 🗑️ 🔎 💿 | ถอนแอป / สำรวจดิสก์ / ไฟล์ติดตั้ง | `mo uninstall` / `analyze` / `installer` | เปิดใน Terminal |
+| 🛡️ | ยกเว้น | `mo clean --whitelist` | เลือกแคชที่ไม่อยากให้ลบ (เปิดใน Terminal) |
+| 🔐 | ล้างทั้งระบบ | `mo clean` | รวมแคชระดับระบบ ต้องใส่รหัส admin (เปิดใน Terminal) |
 
-งานในกลุ่ม "งานแมว" รันในแอปและแสดง log สดๆ (กดหยุดได้) ส่วนงานที่ต้องเลือกรายการด้วยคีย์บอร์ดจะเปิดหน้าต่าง Terminal ให้
+งานในกลุ่ม "งานแมว" รันในแอปและแสดง log สดๆ (กด **หยุด** ได้ทุกเมื่อ) ส่วนงานที่ต้องเลือกรายการด้วยคีย์บอร์ดจะเปิดหน้าต่าง Terminal ให้
+
+**แมวดูแลเครื่องให้เองด้วย** (ปิด/เปิดได้ใน ⚙️ ตั้งค่า)
+
+- 🔔 แจ้งเตือนเมื่อดิสก์ใกล้เต็ม, แรมตึง, มีโปรแกรมกิน CPU นานผิดปกติ หรือเมื่องานเสร็จตอนปิดแผงอยู่
+- 👃 แอบดมทุกสัปดาห์ แล้วบอกเมื่อมีของให้ลบเยอะ
+- 🎁 บอกเมื่อ Purr หรือ Mole มีเวอร์ชันใหม่
+- 🌏 ภาษาไทย / English, เปิดอัตโนมัติเมื่อเข้าเครื่อง, เสียงครางเมื่องานเสร็จ
 
 ## 📋 สิ่งที่ต้องมี
 
@@ -82,9 +89,16 @@ open /Applications/Purr.app
 
 **5. (ไม่บังคับ) ให้เปิดเองทุกครั้งที่เข้าเครื่อง**
 
-System Settings → General → Login Items → กด **+** → เลือก `Purr`
+คลิกแมว → ⚙️ → เปิด **เปิด Purr อัตโนมัติเมื่อเข้าเครื่อง**
 
 ## 🔄 อัปเดตเป็นเวอร์ชันใหม่
+
+เมื่อมีเวอร์ชันใหม่ Purr จะแจ้งเตือนและขึ้นแถบ 🎁 ในแผงเอง (เช็กวันละครั้ง ปิดได้ในตั้งค่า)
+เวอร์ชันที่ใช้อยู่ดูได้ที่มุมล่างซ้ายของแผง
+
+**ถ้าดาวน์โหลดไฟล์ `.zip`** จากหน้า Releases: แตกไฟล์แล้วลาก `Purr.app` ไปทับใน Applications
+
+**ถ้า build เอง:**
 
 ```bash
 cd purr
@@ -95,14 +109,15 @@ pkill -x Purr; rm -rf /Applications/Purr.app && mv Purr.app /Applications/ && op
 
 ## 🧹 ถอนการติดตั้ง
 
-ออกจากแอป (คลิกแมว → **ออก**) แล้วลบ `/Applications/Purr.app` ได้เลย Purr ไม่ได้เก็บไฟล์อื่นไว้ในเครื่อง
+ออกจากแอป (คลิกแมว → **ออก**) แล้วลบ `/Applications/Purr.app` ได้เลย
+ถ้าอยากลบค่าที่ตั้งไว้ด้วย: `defaults delete local.purr.menubar`
 
 ## 🛟 ความปลอดภัย
 
 - เริ่มจาก **👃 ดมก่อน** เสมอ เพื่อดูว่าจะลบอะไรบ้าง รายการเต็มอยู่ที่ `~/.config/mole/clean-list.txt`
 - **🧹 เลียขน** ลบถาวร ไม่ผ่านถังขยะ ถ้ามีแคชที่อยากเก็บไว้ ให้ตั้งค่าด้วย `mo clean --whitelist` ใน Terminal
 - เวลารันจากในแอป Mole จะล้างเฉพาะส่วนของผู้ใช้ แคชระดับระบบที่ต้องใช้รหัสผ่าน admin จะถูกข้าม (ถ้าอยากล้างด้วย ให้รัน `mo clean` ใน Terminal)
-- ดูประวัติสิ่งที่ถูกลบได้จากปุ่ม **📜 ประวัติ**
+- ดูประวัติสิ่งที่ถูกลบได้จากปุ่ม 🕘 **ประวัติ** มุมล่างของแผง
 
 ## ❓ แก้ปัญหา
 
@@ -136,6 +151,23 @@ Purr สร้างไฟล์ `.command` แล้วให้ macOS เป�
 </details>
 
 <details>
+<summary><b>เปิดแอปที่ดาวน์โหลดมาแล้วขึ้นว่า "damaged" หรือ "cannot be opened"</b></summary>
+
+ไฟล์ที่ไม่ได้ notarize กับ Apple จะถูก macOS กันไว้ ให้รัน
+
+```bash
+xattr -dr com.apple.quarantine /Applications/Purr.app
+```
+</details>
+
+<details>
+<summary><b>ไม่มีแจ้งเตือนเด้งขึ้นมา</b></summary>
+
+System Settings → Notifications → Purr → เปิด Allow Notifications
+(แจ้งเตือนทำงานเฉพาะตอนเปิดจาก `Purr.app` ไม่ใช่ `swift run`)
+</details>
+
+<details>
 <summary><b>หาแมวบน menu bar ไม่เจอ</b></summary>
 
 ถ้า menu bar มีไอคอนเยอะเกินไป (โดยเฉพาะ MacBook ที่มีรอยบาก) ไอคอนอาจถูกซ่อน ลองซ่อนไอคอนอื่นด้วยการกด ⌘ ค้างแล้วลากออก
@@ -144,17 +176,47 @@ Purr สร้างไฟล์ `.command` แล้วให้ macOS เป�
 ## 🛠 สำหรับนักพัฒนา
 
 ```
-Sources/Purr/
-├── PurrApp.swift      # จุดเริ่มแอป: MenuBarExtra + ไอคอนแมว
-├── PurrPanel.swift    # หน้าตาแผง: หัวแมว, ตัวเลขเครื่อง, ปุ่ม, log
-├── CatFace.swift      # วาดหน้าแมว 6 อารมณ์ด้วย Canvas (ไม่ใช้ไฟล์รูป)
-├── PurrModel.swift    # รายการงาน + การรัน `mo` และอ่าน output
-└── SystemStats.swift  # อ่าน CPU / แรม / ดิสก์ จาก macOS โดยตรง
+Sources/
+├── PurrCore/              # ส่วนที่ไม่มี UI และมี test ครอบ
+│   ├── GroupProcess.swift   # รันคำสั่งใน process group ของตัวเอง (กดหยุดแล้วหยุดทั้งหมด)
+│   ├── MoleCLI.swift        # หา `mo` และเรียกแบบไม่ต้องตอบคำถาม
+│   ├── MoleStatus.swift     # อ่าน JSON จาก `mo status`
+│   ├── MoleHistory.swift    # อ่าน JSON จาก `mo history`
+│   ├── OutputParser.swift   # ดึงตัวเลขสรุปจาก output ของ Mole
+│   ├── Health.swift         # คะแนนสุขภาพ + กฎการแจ้งเตือน
+│   ├── LogBuffer.swift      # เก็บ log แบบตัด ANSI/spinner
+│   ├── SemanticVersion.swift# เทียบเวอร์ชัน + อ่าน GitHub release
+│   └── SystemStats.swift    # อ่าน CPU/แรม/ดิสก์เอง (ใช้ตอนไม่มี Mole)
+└── Purr/                  # แอป SwiftUI
+    ├── PurrApp.swift        # จุดเริ่มแอป + ต่อ service เข้าด้วยกัน
+    ├── PurrModel.swift      # รายการงาน + การรัน `mo`
+    ├── StatusMonitor.swift  # `mo status --watch` (เร็วตอนเปิดแผง ช้าตอนปิด)
+    ├── CareService.swift    # แจ้งเตือนสุขภาพเครื่อง + ดมประจำสัปดาห์
+    ├── UpdateChecker.swift  # เช็กเวอร์ชันใหม่จาก GitHub Releases
+    ├── PurrPanel.swift      # หน้าหลักของแผง
+    ├── PanelPages.swift     # หน้าประวัติ + ตั้งค่า
+    └── CatFace.swift        # วาดหน้าแมว ไอคอนแถบเมนู และไอคอนแอป
+Resources/en.lproj/        # คำแปลภาษาอังกฤษ (ภาษาไทยคือข้อความต้นฉบับในโค้ด)
 ```
 
-- รันแบบ debug: `swift run`
+- รันแบบ debug: `swift run` หรือ `swift run Purr --window` (เปิดแผงเป็นหน้าต่างธรรมดา, ใส่ `history` หรือ `settings` ต่อท้ายได้)
+- รัน test: `./test.sh` (ถ้ามี Xcode ใช้ `swift test` ได้เลย)
+- แก้ข้อความใน UI แล้วรัน `scripts/check-strings.sh` เพื่อดูว่าข้อความไหนยังไม่มีคำแปลใน `Resources/en.lproj/Localizable.strings`
 - เพิ่ม/แก้ปุ่ม: แก้ `CatTasks` ใน `PurrModel.swift`
 - เปลี่ยนสีขนแมว: แก้ `fur`, `furDark`, `pink` ใน `CatFace.swift`
+
+### เวอร์ชันและการออก release
+
+ใช้ [Semantic Versioning](https://semver.org/): เลขเวอร์ชันอยู่ในไฟล์ `VERSION` ส่วนเลข build คือจำนวน commit
+สิ่งที่เปลี่ยนในแต่ละเวอร์ชันจดไว้ใน [CHANGELOG.md](CHANGELOG.md)
+
+1. เขียนหัวข้อ `## [X.Y.Z] - วันที่` ใน `CHANGELOG.md` แล้ว merge เข้า `main`
+2. รัน `scripts/release.sh X.Y.Z` สคริปต์จะรัน test, อัปเดต `VERSION`, build, ทำไฟล์ `dist/Purr-X.Y.Z.zip`, สร้าง tag `vX.Y.Z` และไฟล์ Homebrew cask `dist/purr.rb`
+3. ตรวจดูแล้วรันซ้ำพร้อม `--publish` หรือรันคำสั่ง `git push` / `gh release create` ที่สคริปต์พิมพ์ให้
+
+เมื่อ release ขึ้น GitHub แล้ว Purr ทุกเครื่องจะแจ้งเตือนภายในหนึ่งวัน
+
+ถ้ามีบัญชี Apple Developer: ตั้ง `PURR_SIGN_IDENTITY="Developer ID Application: …"` และ `NOTARY_PROFILE` (จาก `xcrun notarytool store-credentials`) ก่อนรันสคริปต์ จะได้แอปที่เซ็นและ notarize แล้ว ผู้ใช้เปิดได้เลยโดยไม่ต้องใช้ `xattr`
 
 ## 🙏 ขอบคุณ
 

@@ -166,19 +166,40 @@ struct CatFace: View {
         ctx.fill(ear(left: false), with: .color(.black))
         ctx.fill(head, with: .color(.black))
 
+        // Knock the features out of the silhouette; they must read at 18 pt.
         ctx.blendMode = .destinationOut
         let style = StrokeStyle(lineWidth: 7, lineCap: .round)
         for x in [36.0, 64.0] {
-            if mood == .busy {
-                var p = Path()
+            var p = Path()
+            switch mood {
+            case .happy, .done:
+                // ^ ^
                 p.move(to: CGPoint(x: x - 7, y: 58))
-                p.addQuadCurve(to: CGPoint(x: x + 7, y: 58), control: CGPoint(x: x, y: 47))
+                p.addQuadCurve(to: CGPoint(x: x + 7, y: 58), control: CGPoint(x: x, y: 45))
                 ctx.stroke(p, with: .color(.black), style: style)
-            } else {
+            case .busy:
+                // - -  concentrating
+                p.move(to: CGPoint(x: x - 7, y: 54))
+                p.addLine(to: CGPoint(x: x + 7, y: 54))
+                ctx.stroke(p, with: .color(.black), style: style)
+            case .sad:
+                // droopy eyes: inner ends raised, outer ends low
+                let dir: CGFloat = x < 50 ? 1 : -1
+                p.move(to: CGPoint(x: x - 7 * dir, y: 57))
+                p.addLine(to: CGPoint(x: x + 7 * dir, y: 50))
+                ctx.stroke(p, with: .color(.black), style: style)
+            case .okay, .blink:
                 ctx.fill(Path(ellipseIn: CGRect(x: x - 7, y: 46, width: 14, height: 17)), with: .color(.black))
             }
         }
-        ctx.fill(Path(ellipseIn: CGRect(x: 44, y: 64, width: 12, height: 8)), with: .color(.black))
+        if mood == .sad {
+            var frown = Path()
+            frown.move(to: CGPoint(x: 42, y: 76))
+            frown.addQuadCurve(to: CGPoint(x: 58, y: 76), control: CGPoint(x: 50, y: 64))
+            ctx.stroke(frown, with: .color(.black), style: StrokeStyle(lineWidth: 6, lineCap: .round))
+        } else {
+            ctx.fill(Path(ellipseIn: CGRect(x: 44, y: 64, width: 12, height: 8)), with: .color(.black))
+        }
     }
 
     // MARK: Shapes
@@ -209,12 +230,53 @@ struct CatFace: View {
 }
 
 extension CatFace {
+    private static var menuBarCache: [CatMood: NSImage] = [:]
+
     /// Menu bar icon rendered as a template image so it follows light/dark menu bars.
-    @MainActor static func menuBarImage(busy: Bool) -> NSImage {
-        let renderer = ImageRenderer(content: CatFace(mood: busy ? .busy : .okay, template: true).frame(width: 18, height: 18))
+    @MainActor static func menuBarImage(mood: CatMood) -> NSImage {
+        if let cached = menuBarCache[mood] { return cached }
+        let renderer = ImageRenderer(content: CatFace(mood: mood, template: true).frame(width: 18, height: 18))
         renderer.scale = 2
         let image = renderer.nsImage ?? NSImage(systemSymbolName: "cat.fill", accessibilityDescription: nil)!
         image.isTemplate = true
+        image.accessibilityDescription = "Purr"
+        menuBarCache[mood] = image
         return image
+    }
+
+    /// Writes an `.iconset` folder (all sizes `iconutil` expects) for the app icon.
+    @MainActor static func exportIconSet(to folder: URL) throws {
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        for points in [16, 32, 128, 256, 512] {
+            for scale in [1, 2] {
+                let size = CGFloat(points * scale)
+                let renderer = ImageRenderer(content: AppIconView().frame(width: size, height: size))
+                renderer.scale = 1
+                guard let image = renderer.cgImage else { continue }
+                let rep = NSBitmapImageRep(cgImage: image)
+                let name = scale == 1 ? "icon_\(points)x\(points).png" : "icon_\(points)x\(points)@2x.png"
+                try rep.representation(using: .png, properties: [:])?.write(to: folder.appendingPathComponent(name))
+            }
+        }
+    }
+}
+
+/// The happy cat on a warm rounded square, inset like other macOS app icons.
+private struct AppIconView: View {
+    var body: some View {
+        GeometryReader { geo in
+            let side = geo.size.width
+            ZStack {
+                RoundedRectangle(cornerRadius: side * 0.185, style: .continuous)
+                    .fill(LinearGradient(colors: [Color(red: 1.0, green: 0.93, blue: 0.82), Color(red: 1.0, green: 0.80, blue: 0.62)],
+                                         startPoint: .top, endPoint: .bottom))
+                    .frame(width: side * 0.80, height: side * 0.80)
+                    .shadow(color: .black.opacity(0.18), radius: side * 0.02, y: side * 0.01)
+                CatFace(mood: .happy)
+                    .frame(width: side * 0.62, height: side * 0.62)
+                    .offset(y: -side * 0.01)
+            }
+            .frame(width: side, height: side)
+        }
     }
 }

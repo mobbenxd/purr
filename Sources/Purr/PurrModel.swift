@@ -1,9 +1,10 @@
 import AppKit
 import Foundation
+import PurrCore
 
 /// One thing the cat can do. `inApp` tasks stream into the log;
 /// the rest are interactive TUIs and open in Terminal.
-struct CatTask: Identifiable {
+struct CatTask: Identifiable, Equatable {
     let id: String
     let emoji: String
     let title: String
@@ -11,85 +12,89 @@ struct CatTask: Identifiable {
     let args: [String]
     var inApp = true
     var confirm: String? = nil
+
+    /// Dry runs only report what could be removed.
+    var isPreview: Bool { args.contains("--dry-run") }
+
+    static func == (a: Self, b: Self) -> Bool { a.id == b.id && a.args == b.args }
 }
 
 enum CatTasks {
     static let quick: [CatTask] = [
-        CatTask(id: "sniff", emoji: "👃", title: "ดมก่อน", subtitle: "ดูว่าลบอะไรได้บ้าง",
+        CatTask(id: "sniff", emoji: "👃", title: String(localized: "ดมก่อน"), subtitle: String(localized: "ดูว่าลบอะไรได้บ้าง"),
                 args: ["clean", "--dry-run"]),
-        CatTask(id: "groom", emoji: "🧹", title: "เลียขน", subtitle: "ล้างแคช/ล็อก",
+        CatTask(id: "groom", emoji: "🧹", title: String(localized: "เลียขน"), subtitle: String(localized: "ล้างแคช/ล็อก"),
                 args: ["clean"],
-                confirm: "แคช ล็อก และถังขยะจะถูกลบถาวร (ไม่ผ่าน Trash)\nแนะนำให้กด \"ดมก่อน\" เพื่อดูรายการก่อน"),
-        CatTask(id: "stretch", emoji: "🧘", title: "ยืดเส้น", subtitle: "Optimize ระบบ",
+                confirm: String(localized: "แคช ล็อก และถังขยะจะถูกลบถาวร (ไม่ผ่าน Trash)\nแนะนำให้กด \"ดมก่อน\" เพื่อดูรายการก่อน")),
+        CatTask(id: "stretch", emoji: "🧘", title: String(localized: "ยืดเส้น"), subtitle: String(localized: "Optimize ระบบ"),
                 args: ["optimize"],
-                confirm: "รีเฟรช DNS, QuickLook, ไอคอน และฐานข้อมูลระบบ"),
-        CatTask(id: "dig", emoji: "📦", title: "คุ้ยโปรเจกต์", subtitle: "หา node_modules ฯลฯ",
+                confirm: String(localized: "รีเฟรช DNS, QuickLook, ไอคอน และฐานข้อมูลระบบ")),
+        CatTask(id: "dig", emoji: "📦", title: String(localized: "คุ้ยโปรเจกต์"), subtitle: String(localized: "หา node_modules ฯลฯ"),
                 args: ["purge", "--dry-run"]),
     ]
 
     static let terminal: [CatTask] = [
-        CatTask(id: "uninstall", emoji: "🗑️", title: "ถอนแอป", subtitle: "", args: ["uninstall"], inApp: false),
-        CatTask(id: "analyze", emoji: "🔎", title: "สำรวจดิสก์", subtitle: "", args: ["analyze"], inApp: false),
-        CatTask(id: "installer", emoji: "💿", title: "ไฟล์ติดตั้ง", subtitle: "", args: ["installer"], inApp: false),
-        CatTask(id: "history", emoji: "📜", title: "ประวัติ", subtitle: "", args: ["history"], inApp: false),
+        CatTask(id: "uninstall", emoji: "🗑️", title: String(localized: "ถอนแอป"), subtitle: "", args: ["uninstall"], inApp: false),
+        CatTask(id: "analyze", emoji: "🔎", title: String(localized: "สำรวจดิสก์"), subtitle: "", args: ["analyze"], inApp: false),
+        CatTask(id: "installer", emoji: "💿", title: String(localized: "ไฟล์ติดตั้ง"), subtitle: "", args: ["installer"], inApp: false),
+        CatTask(id: "whitelist", emoji: "🛡️", title: String(localized: "ยกเว้น"), subtitle: "", args: ["clean", "--whitelist"], inApp: false),
+        CatTask(id: "deep", emoji: "🔐", title: String(localized: "ล้างทั้งระบบ"), subtitle: "", args: ["clean"], inApp: false),
     ]
+
+    /// Offered after "คุ้ยโปรเจกต์" finds something.
+    static func purgeAll(estimate: OutputParser.Estimate) -> CatTask {
+        CatTask(id: "purge", emoji: "🧺", title: String(localized: "ลบที่เจอทั้งหมด"),
+                subtitle: estimate.bytes.bytesText, args: ["purge", "--yes"],
+                confirm: String(localized: "จะลบโฟลเดอร์ build/dependency ที่เจอทั้งหมด (ประมาณ \(estimate.bytes.bytesText)) แบบถาวร\nติดตั้งกลับได้ด้วย npm install / build ใหม่"))
+    }
+
+    static func moleUpdate() -> CatTask {
+        CatTask(id: "update", emoji: "⬆️", title: String(localized: "อัปเดต Mole"), subtitle: "", args: ["update"], inApp: false)
+    }
+}
+
+struct RunSummary: Equatable {
+    var text: String
+    var good: Bool
 }
 
 @MainActor
 final class PurrModel: ObservableObject {
-    @Published var cpu: Double = 0
-    @Published var memory: Double = 0
-    @Published var diskFree: Int64 = 0
-    @Published var diskTotal: Int64 = 0
-    @Published var log = ""
-    @Published var runningTask: CatTask?
-    @Published var summary: String?
+    @Published private(set) var moPath: String?
+    @Published private(set) var logText = ""
+    @Published private(set) var runningTask: CatTask?
+    @Published private(set) var summary: RunSummary?
+    @Published private(set) var followUp: CatTask?
     @Published var justFinished = false
+    @Published var panelVisible = false
 
-    let moPath: String?
-    private var stats = SystemStats()
-    private var timer: Timer?
-    private var process: Process?
+    /// Fired with the dry-run estimate whenever "ดมก่อน" finishes.
+    var onSniffResult: ((Int64) -> Void)?
+    /// Fired before a task starts, so background work can step aside.
+    var onTaskStart: (() -> Void)?
+
+    private var log = LogBuffer()
+    private var flushScheduled = false
+    private var process: GroupProcess?
+    private var stoppedByUser = false
+    private var followUpExpiry: Task<Void, Never>?
 
     var isRunning: Bool { runningTask != nil }
 
-    var diskUsed: Double {
-        diskTotal > 0 ? Double(diskTotal - diskFree) / Double(diskTotal) * 100 : 0
-    }
-
-    /// Rough 0–100 score: lower load and more free disk keep the cat happy.
-    var health: Int {
-        let penalty = max(0, cpu - 50) * 0.4 + max(0, memory - 60) * 0.5 + max(0, diskUsed - 75) * 1.2
-        return max(0, min(100, Int(100 - penalty)))
-    }
-
     init() {
-        moPath = Self.findMo()
-        refreshStats()
-        timer = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { [weak self] _ in
-            Task { @MainActor in self?.refreshStats() }
-        }
+        moPath = MoleCLI.find()
     }
 
-    private static func findMo() -> String? {
-        let candidates = ["/opt/homebrew/bin/mo", "/usr/local/bin/mo",
-                          NSHomeDirectory() + "/.local/bin/mo", "/run/current-system/sw/bin/mo"]
-        return candidates.first { FileManager.default.isExecutableFile(atPath: $0) }
-    }
-
-    private static var shellPath: String {
-        "/opt/homebrew/bin:/usr/local/bin:\(NSHomeDirectory())/.local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
-    }
-
-    func refreshStats() {
-        cpu = stats.cpuUsage()
-        memory = stats.memoryUsage()
-        (diskFree, diskTotal) = stats.disk()
+    /// Picks up Mole installed (or removed) while Purr was running.
+    func refreshMoPath() {
+        let found = MoleCLI.find()
+        if found != moPath { moPath = found }
     }
 
     // MARK: - Running Mole
 
     func perform(_ task: CatTask) {
+        refreshMoPath()
         guard let mo = moPath, !isRunning else { return }
         if !task.inApp {
             openInTerminal(mo: mo, args: task.args)
@@ -101,106 +106,160 @@ final class PurrModel: ObservableObject {
         run(task, mo: mo)
     }
 
+    func stop() {
+        stoppedByUser = true
+        process?.terminate()
+    }
+
+    func clearLog() {
+        log.reset()
+        logText = ""
+        summary = nil
+        followUp = nil
+    }
+
+    func shutdown() {
+        process?.terminate(grace: 0.5)
+    }
+
     private func confirm(title: String, message: String) -> Bool {
         NSApp.activate(ignoringOtherApps: true)
         let alert = NSAlert()
         alert.messageText = title
         alert.informativeText = message
-        alert.addButton(withTitle: "ลุยเลย 🐾")
-        alert.addButton(withTitle: "ไม่เอาดีกว่า")
+        alert.addButton(withTitle: String(localized: "ลุยเลย 🐾"))
+        alert.addButton(withTitle: String(localized: "ไม่เอาดีกว่า"))
         return alert.runModal() == .alertFirstButtonReturn
     }
 
     private func run(_ task: CatTask, mo: String) {
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: mo)
-        process.arguments = task.args
-        var env = ProcessInfo.processInfo.environment
-        env["PATH"] = Self.shellPath
-        env["NO_COLOR"] = "1"
-        env["TERM"] = "dumb"
-        process.environment = env
-        process.standardInput = FileHandle.nullDevice
-
-        let pipe = Pipe()
-        process.standardOutput = pipe
-        process.standardError = pipe
-        pipe.fileHandleForReading.readabilityHandler = { handle in
-            let data = handle.availableData
-            guard !data.isEmpty, let text = String(data: data, encoding: .utf8) else { return }
-            Task { @MainActor [weak self] in self?.append(text) }
+        onTaskStart?()
+        let process = GroupProcess(executable: mo, arguments: task.args, environment: MoleCLI.environment)
+        process.onOutput = { [weak self] data in
+            let text = String(decoding: data, as: UTF8.self)
+            Task { @MainActor in self?.append(text) }
+        }
+        let started = Date()
+        process.onExit = { [weak self] status in
+            Task { @MainActor in await self?.finish(task, status: status, started: started) }
         }
 
-        process.terminationHandler = { proc in
-            pipe.fileHandleForReading.readabilityHandler = nil
-            let rest = pipe.fileHandleForReading.readDataToEndOfFile()
-            Task { @MainActor [weak self] in
-                if let text = String(data: rest, encoding: .utf8) { self?.append(text) }
-                self?.finish(status: proc.terminationStatus)
-            }
-        }
-
-        log = "$ mo \(task.args.joined(separator: " "))\n"
+        log.reset("$ mo \(task.args.joined(separator: " "))")
+        logText = log.text
         summary = nil
+        followUp = nil
         justFinished = false
+        stoppedByUser = false
         runningTask = task
         self.process = process
         do {
-            try process.run()
+            try process.start()
         } catch {
-            append("แมวสะดุด: \(error.localizedDescription)\n")
-            finish(status: -1)
+            append(String(localized: "แมวสะดุด: \(error.localizedDescription)") + "\n")
+            Task { await finish(task, status: -1, started: started) }
         }
     }
 
-    func stop() {
-        process?.terminate()
+    private func append(_ text: String) {
+        log.append(text)
+        // Long runs print a lot; redraw at most ~8 times a second.
+        guard !flushScheduled else { return }
+        flushScheduled = true
+        Task {
+            try? await Task.sleep(for: .milliseconds(120))
+            flushScheduled = false
+            logText = log.text
+        }
     }
 
-    private func append(_ raw: String) {
-        log += Self.clean(raw)
-        if log.count > 60_000 { log = String(log.suffix(50_000)) }
-    }
-
-    private func finish(status: Int32) {
-        let lines = log.split(separator: "\n").map(String.init)
-        let keys = ["Potential space", "Tracked cleanup", "Free space", "complete", "Nothing to"]
-        let picked = lines.filter { line in keys.contains { line.contains($0) } }.suffix(3)
-        summary = picked.isEmpty
-            ? (status == 0 ? "เสร็จแล้วเหมียว" : "จบด้วยรหัส \(status)")
-            : picked.map { $0.trimmingCharacters(in: .whitespaces) }.joined(separator: "\n")
-        runningTask = nil
+    private func finish(_ task: CatTask, status: Int32, started: Date) async {
+        logText = log.text
         process = nil
-        justFinished = status == 0
-        refreshStats()
+        let output = log.text
+
+        var result: RunSummary
+        if stoppedByUser {
+            result = RunSummary(text: String(localized: "หยุดแล้ว แมวพักก่อน"), good: false)
+        } else if task.isPreview, let estimate = OutputParser.estimate(in: output) {
+            result = RunSummary(text: Self.previewText(estimate), good: true)
+            if task.id == "sniff" { onSniffResult?(estimate.bytes) }
+            if task.id == "dig", estimate.bytes > 0 { offerFollowUp(CatTasks.purgeAll(estimate: estimate)) }
+        } else if !task.isPreview, let mo = moPath,
+                  let session = await MoleCLI.history(mo)?.session(for: task.args[0], startedAfter: started),
+                  session.changedFiles {
+            let removed = (session.actions?.removed ?? 0) + (session.actions?.trashed ?? 0)
+            result = RunSummary(text: String(localized: "ได้พื้นที่คืน \(session.sizeBytes.bytesText) 🎉 (ลบ \(removed) รายการ)"), good: true)
+        } else {
+            let lines = OutputParser.resultLines(in: output)
+            let fallback = status == 0 ? String(localized: "เสร็จแล้วเหมียว") : String(localized: "จบด้วยรหัส \(Int(status))")
+            result = RunSummary(text: lines.isEmpty ? fallback : lines.joined(separator: "\n"), good: status == 0)
+        }
+
+        summary = result
+        runningTask = nil
+        justFinished = status == 0 && !stoppedByUser
+
+        if justFinished, UserDefaults.standard.bool(forKey: Prefs.purrSound) {
+            NSSound(named: "Purr")?.play()
+        }
+        if !panelVisible, UserDefaults.standard.bool(forKey: Prefs.notifyTaskDone) {
+            Notifier.shared.post(id: "task", title: "\(task.emoji) \(task.title)", body: result.text)
+        }
     }
 
-    /// Strips ANSI escapes and spinner carriage returns that Mole may still emit.
-    private static func clean(_ text: String) -> String {
-        var out = text.replacingOccurrences(of: "\u{1B}\\[[0-9;?]*[ -/]*[@-~]", with: "", options: .regularExpression)
-        out = out.replacingOccurrences(of: "\r\n", with: "\n")
-        out = out.replacingOccurrences(of: "[^\n]*\r", with: "", options: .regularExpression)
-        return out
+    /// `mo purge --yes` removes whatever is eligible *now*, so the offer only
+    /// stands while the dry-run result it quotes is fresh.
+    private func offerFollowUp(_ task: CatTask) {
+        followUp = task
+        followUpExpiry?.cancel()
+        followUpExpiry = Task {
+            try? await Task.sleep(for: .seconds(600))
+            guard !Task.isCancelled else { return }
+            if followUp == task { followUp = nil }
+        }
+    }
+
+    static func previewText(_ estimate: OutputParser.Estimate) -> String {
+        if estimate.bytes == 0 { return String(localized: "สะอาดอยู่แล้ว ไม่มีอะไรให้ลบ") }
+        if let items = estimate.items {
+            return String(localized: "เจอของให้ลบได้ ~\(estimate.bytes.bytesText) (\(items) รายการ)")
+        }
+        return String(localized: "เจอของให้ลบได้ ~\(estimate.bytes.bytesText)")
+    }
+
+    // MARK: - Terminal
+
+    func openInTerminal(args: [String]) {
+        refreshMoPath()
+        guard let mo = moPath else { return }
+        openInTerminal(mo: mo, args: args)
     }
 
     private func openInTerminal(mo: String, args: [String]) {
+        let command = ([mo] + args).map(Self.shellQuote).joined(separator: " ")
         let script = """
         #!/bin/zsh
-        export PATH="\(Self.shellPath):$PATH"
+        export PATH="\(MoleCLI.shellPath):$PATH"
         clear
         echo "🐱 Purr → mo \(args.joined(separator: " "))"
         echo
-        "\(mo)" \(args.joined(separator: " "))
+        \(command)
         echo
-        echo "เสร็จแล้วเหมียว ปิดหน้าต่างนี้ได้เลย 🐾"
+        echo "\(String(localized: "เสร็จแล้วเหมียว ปิดหน้าต่างนี้ได้เลย 🐾"))"
         """
-        let url = FileManager.default.temporaryDirectory.appendingPathComponent("purr-\(args[0]).command")
+        let name = "purr-" + args.joined(separator: "-").replacingOccurrences(of: "-", with: "") + ".command"
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent(name)
         do {
             try script.write(to: url, atomically: true, encoding: .utf8)
             try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: url.path)
             NSWorkspace.shared.open(url)
         } catch {
-            log = "เปิด Terminal ไม่ได้: \(error.localizedDescription)\n"
+            log.reset(String(localized: "เปิด Terminal ไม่ได้: \(error.localizedDescription)"))
+            logText = log.text
         }
+    }
+
+    private static func shellQuote(_ s: String) -> String {
+        "'" + s.replacingOccurrences(of: "'", with: "'\\''") + "'"
     }
 }

@@ -1,12 +1,14 @@
 import Foundation
 import Darwin
 
-/// Reads CPU, memory and disk usage straight from the kernel, so the widget
-/// does not depend on Mole's status binary.
-struct SystemStats {
+/// Reads CPU, memory and disk usage straight from the kernel. Used as a
+/// fallback when `mo status` is unavailable.
+public struct SystemStats {
+    public init() {}
+
     private var lastTicks: (busy: UInt64, total: UInt64)?
 
-    mutating func cpuUsage() -> Double {
+    public mutating func cpuUsage() -> Double {
         var info = host_cpu_load_info()
         var count = mach_msg_type_number_t(MemoryLayout<host_cpu_load_info>.size / MemoryLayout<integer_t>.size)
         let result = withUnsafeMutablePointer(to: &info) {
@@ -28,7 +30,7 @@ struct SystemStats {
         return Double(busy - last.busy) / Double(total - last.total) * 100
     }
 
-    func memoryUsage() -> Double {
+    public func memoryUsage() -> Double {
         var stats = vm_statistics64()
         var count = mach_msg_type_number_t(MemoryLayout<vm_statistics64>.size / MemoryLayout<integer_t>.size)
         let result = withUnsafeMutablePointer(to: &stats) {
@@ -43,7 +45,7 @@ struct SystemStats {
         return Double(used) / Double(ProcessInfo.processInfo.physicalMemory) * 100
     }
 
-    func disk() -> (free: Int64, total: Int64) {
+    public func disk() -> (free: Int64, total: Int64) {
         let keys: Set<URLResourceKey> = [.volumeAvailableCapacityForImportantUsageKey, .volumeTotalCapacityKey]
         guard let values = try? URL(fileURLWithPath: "/").resourceValues(forKeys: keys) else { return (0, 0) }
         return (values.volumeAvailableCapacityForImportantUsage ?? 0, Int64(values.volumeTotalCapacity ?? 0))

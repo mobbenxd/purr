@@ -1,0 +1,20 @@
+# Homebrew cask for Purr. scripts/release.sh fills in the placeholders and
+# writes dist/purr.rb; copy that into a tap repo (e.g. homebrew-tap/Casks/).
+cask "purr" do
+  version "{{VERSION}}"
+  sha256 "{{SHA256}}"
+
+  url "https://github.com/{{REPO}}/releases/download/v#{version}/Purr-#{version}.zip"
+  name "Purr"
+  desc "Cat-themed menu bar app for the Mole Mac cleaner"
+  homepage "https://github.com/{{REPO}}"
+
+  depends_on macos: ">= :sonoma"
+  depends_on formula: "mole"
+
+  app "Purr.app"
+
+  uninstall quit: "local.purr.menubar"
+
+  zap trash: "~/Library/Preferences/local.purr.menubar.plist"
+end
