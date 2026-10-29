@@ -61,7 +61,7 @@ final class AppServices: ObservableObject {
         monitor.onSnapshot = { [weak care] in care?.handle($0) }
         moleWatcher.moPath = { [weak model] in model?.moPath }
         moleWatcher.isBusy = { [weak model] in model?.isRunning ?? false }
-        model.onTerminalTask = { [weak moleWatcher] task in
+        model.onTaskLaunched = { [weak moleWatcher] task in
             if task.id == CatTasks.moleUpdate().id { moleWatcher?.watchUpdate() }
         }
 
