@@ -27,4 +27,21 @@ public enum OutputParser {
             .filter { line in keys.contains { line.contains($0) } }
             .suffix(limit)
     }
+
+    public enum UpdateResult: Equatable {
+        case updated(String)
+        case alreadyLatest(String)
+    }
+
+    /// What `mo update` reported, from its last "Updated to …" or
+    /// "Already on latest version, …" line.
+    public static func updateResult(in text: String) -> UpdateResult? {
+        for line in text.split(separator: "\n").reversed() {
+            guard let comma = line.lastIndex(of: ",") else { continue }
+            let version = line[line.index(after: comma)...].trimmingCharacters(in: .whitespaces)
+            if line.contains("Already on latest version") { return .alreadyLatest(version) }
+            if line.contains("Updated to") { return .updated(version) }
+        }
+        return nil
+    }
 }

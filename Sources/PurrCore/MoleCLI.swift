@@ -22,6 +22,12 @@ public enum MoleCLI {
         return "\(real)@\(modified.timeIntervalSince1970)"
     }
 
+    /// Homebrew installs update with `brew upgrade`, which needs no password,
+    /// so Purr can run `mo update` itself instead of handing it to Terminal.
+    public static func isHomebrewInstall(_ mo: String) -> Bool {
+        URL(fileURLWithPath: mo).resolvingSymlinksInPath().path.contains("/Cellar/mole/")
+    }
+
     public static var shellPath: String {
         "/opt/homebrew/bin:/usr/local/bin:\(NSHomeDirectory())/.local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
     }

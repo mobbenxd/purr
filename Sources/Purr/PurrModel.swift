@@ -48,8 +48,11 @@ enum CatTasks {
                 confirm: String(localized: "จะลบโฟลเดอร์ build/dependency ที่เจอทั้งหมด (ประมาณ \(estimate.bytes.bytesText)) แบบถาวร\nติดตั้งกลับได้ด้วย npm install / build ใหม่"))
     }
 
+    /// Homebrew installs update right here; other installs may ask for an
+    /// admin password, so they go to Terminal.
     static func moleUpdate() -> CatTask {
-        CatTask(id: "update", emoji: "⬆️", title: String(localized: "อัปเดต Mole"), subtitle: "", args: ["update"], inApp: false)
+        CatTask(id: "update", emoji: "⬆️", title: String(localized: "อัปเดต Mole"), subtitle: "", args: ["update"],
+                inApp: MoleCLI.find().map(MoleCLI.isHomebrewInstall) ?? false)
     }
 }
 
@@ -72,8 +75,8 @@ final class PurrModel: ObservableObject {
     var onSniffResult: ((Int64) -> Void)?
     /// Fired before a task starts, so background work can step aside.
     var onTaskStart: (() -> Void)?
-    /// Fired when a task is handed to Terminal.
-    var onTerminalTask: ((CatTask) -> Void)?
+    /// Fired when a task starts, in the app or in Terminal.
+    var onTaskLaunched: ((CatTask) -> Void)?
 
     private var log = LogBuffer()
     private var flushScheduled = false
@@ -100,13 +103,14 @@ final class PurrModel: ObservableObject {
         guard let mo = moPath, !isRunning else { return }
         if !task.inApp {
             openInTerminal(mo: mo, args: task.args)
-            onTerminalTask?(task)
+            onTaskLaunched?(task)
             return
         }
         if let message = task.confirm, !confirm(title: "\(task.emoji) \(task.title)?", message: message) {
             return
         }
         run(task, mo: mo)
+        onTaskLaunched?(task)
     }
 
     func stop() {
@@ -187,7 +191,14 @@ final class PurrModel: ObservableObject {
             result = RunSummary(text: Self.previewText(estimate), good: true)
             if task.id == "sniff" { onSniffResult?(estimate.bytes) }
             if task.id == "dig", estimate.bytes > 0 { offerFollowUp(CatTasks.purgeAll(estimate: estimate)) }
-        } else if !task.isPreview, let mo = moPath,
+        } else if task.id == "update", let update = OutputParser.updateResult(in: output) {
+            switch update {
+            case .updated(let version):
+                result = RunSummary(text: String(localized: "อัปเดต Mole เป็น \(version) แล้ว แมวจะเปิดใหม่เองในไม่กี่วินาที"), good: true)
+            case .alreadyLatest(let version):
+                result = RunSummary(text: String(localized: "Mole \(version) เป็นเวอร์ชันล่าสุดแล้ว"), good: true)
+            }
+        } else if !task.isPreview, task.id != "update", let mo = moPath,
                   let session = await MoleCLI.history(mo)?.session(for: task.args[0], startedAfter: started),
                   session.changedFiles {
             let removed = (session.actions?.removed ?? 0) + (session.actions?.trashed ?? 0)
@@ -247,8 +258,13 @@ final class PurrModel: ObservableObject {
         echo "🐱 Purr → mo \(args.joined(separator: " "))"
         echo
         \(command)
+        code=$?
         echo
-        echo "\(String(localized: "เสร็จแล้วเหมียว ปิดหน้าต่างนี้ได้เลย 🐾"))"
+        if [ $code -eq 0 ]; then
+          echo "\(String(localized: "เสร็จแล้วเหมียว ปิดหน้าต่างนี้ได้เลย 🐾"))"
+        else
+          echo "\(String(localized: "แมวสะดุด ลองอ่านข้อความด้านบนดู")) (exit $code)"
+        fi
         """
         let name = "purr-" + args.joined(separator: "-").replacingOccurrences(of: "-", with: "") + ".command"
         let url = FileManager.default.temporaryDirectory.appendingPathComponent(name)

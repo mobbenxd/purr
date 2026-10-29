@@ -169,6 +169,8 @@ import Testing
         let link = root.appendingPathComponent("mo").path
         try fm.createSymbolicLink(atPath: link, withDestinationPath: "Cellar/mole/1.55.0/bin/mo")
         let old = try #require(MoleCLI.installStamp(link))
+        #expect(MoleCLI.isHomebrewInstall(link))
+        #expect(!MoleCLI.isHomebrewInstall(root.appendingPathComponent("Cellar").path))
         #expect(MoleCLI.installStamp(link) == old)
 
         try fm.removeItem(atPath: link)

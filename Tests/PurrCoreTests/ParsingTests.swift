@@ -102,3 +102,25 @@ private func fixture(_ name: String) throws -> Data {
         #expect(log.text == "$ mo clean")
     }
 }
+
+@Suite struct UpdateOutputTests {
+    @Test func updated() {
+        let text = """
+        ✔︎ Bottle mole (1.65.0)
+          1.55.0 -> 1.65.0
+        🍺  /opt/homebrew/Cellar/mole/1.65.0: 68 files, 11.5MB
+        Removing: /opt/homebrew/Cellar/mole/1.55.0... (64 files, 10.9MB)
+
+        ✓ Updated to latest version, 1.65.0
+        """
+        #expect(OutputParser.updateResult(in: text) == .updated("1.65.0"))
+    }
+
+    @Test func alreadyLatest() {
+        #expect(OutputParser.updateResult(in: "\n✓ Already on latest version, 1.65.0\n") == .alreadyLatest("1.65.0"))
+    }
+
+    @Test func failed() {
+        #expect(OutputParser.updateResult(in: "✗ Homebrew upgrade failed\nError: Cannot write to /opt/homebrew/Cellar") == nil)
+    }
+}

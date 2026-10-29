@@ -116,3 +116,6 @@
 "🎁 Purr v%@ มาแล้ว!" = "🎁 Purr v%@ is here!";
 "อัปเดต Mole แล้ว 🐾" = "Mole updated 🐾";
 "Purr เปิดใหม่ให้แล้ว ตอนนี้ใช้ Mole %@" = "Purr restarted and is now using Mole %@";
+"อัปเดต Mole เป็น %@ แล้ว แมวจะเปิดใหม่เองในไม่กี่วินาที" = "Mole updated to %@. Purr will restart in a few seconds.";
+"Mole %@ เป็นเวอร์ชันล่าสุดแล้ว" = "Mole %@ is already the latest version";
+"แมวสะดุด ลองอ่านข้อความด้านบนดู" = "Something went wrong. Check the messages above.";
