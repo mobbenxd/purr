@@ -1,0 +1,36 @@
+Sources/Purr/Prefs.swift
+  s_f255a70e493070::t_bed39558bda173 27
+Sources/Purr/PurrApp.swift
+  s_f255a70e493070::t_bed39558bda173 51,62-66,71
+Sources/PurrCore/MoleCLI.swift
+  s_f255a70e493070::t_c2c3d20c6f2378 14-24
+Sources/Purr/MoleWatcher.swift
+  s_f255a70e493070::t_8d4710facfdb60 1-82
+Sources/Purr/PurrModel.swift
+  s_f255a70e493070::t_bed39558bda173 75-76,103
+Resources/en.lproj/Localizable.strings
+  s_f255a70e493070::t_e288779e239b0f 117-118
+Tests/PurrCoreTests/LogicTests.swift
+  s_f255a70e493070::t_252a3727ab1e25 157-182
+CHANGELOG.md
+  s_f255a70e493070::t_e288779e239b0f 10-12
+  s_f255a70e493070::t_a1a1e1dc25e5ff 8-9
+VERSION
+  s_f255a70e493070::t_cb81f6e5d481c1 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "aefaf98751df1fdd5457d2cca99301c8ba64d948",
+  "prompts": {},
+  "sessions": {
+    "s_f255a70e493070": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e46c1246-2c1b-430f-8891-e69475b64bcf",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "chaipaphat.kae <k.chaipaphat@gmail.com>"
+    }
+  }
+}
