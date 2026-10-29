@@ -154,3 +154,29 @@ import Testing
     private final class PidBox: @unchecked Sendable { var value: Int32 = 0 }
     private final class ExitBox: @unchecked Sendable { var value: Int32? }
 }
+
+@Suite struct InstallStampTests {
+    /// Mirrors a Homebrew upgrade: `bin/mo` is a symlink that moves to a new Cellar folder.
+    @Test func changesWhenSymlinkTargetMoves() throws {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory.appendingPathComponent("purr-stamp-\(UUID().uuidString)")
+        defer { try? fm.removeItem(at: root) }
+        for version in ["1.55.0", "1.65.0"] {
+            let bin = root.appendingPathComponent("Cellar/mole/\(version)/bin")
+            try fm.createDirectory(at: bin, withIntermediateDirectories: true)
+            try Data("#!/bin/sh\n".utf8).write(to: bin.appendingPathComponent("mo"))
+        }
+        let link = root.appendingPathComponent("mo").path
+        try fm.createSymbolicLink(atPath: link, withDestinationPath: "Cellar/mole/1.55.0/bin/mo")
+        let old = try #require(MoleCLI.installStamp(link))
+        #expect(MoleCLI.installStamp(link) == old)
+
+        try fm.removeItem(atPath: link)
+        #expect(MoleCLI.installStamp(link) == nil)
+
+        try fm.createSymbolicLink(atPath: link, withDestinationPath: "Cellar/mole/1.65.0/bin/mo")
+        let new = try #require(MoleCLI.installStamp(link))
+        #expect(new != old)
+        #expect(new.contains("1.65.0"))
+    }
+}

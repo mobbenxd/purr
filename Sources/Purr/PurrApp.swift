@@ -48,6 +48,7 @@ final class AppServices: ObservableObject {
     let monitor = StatusMonitor()
     let care = CareService()
     let updates = UpdateChecker()
+    let moleWatcher = MoleWatcher()
 
     init() {
         Notifier.shared.setUp()
@@ -58,10 +59,16 @@ final class AppServices: ObservableObject {
         model.onSniffResult = { [weak care] in care?.recordSniff(bytes: $0) }
         model.onTaskStart = { [weak care] in care?.cancelSniff() }
         monitor.onSnapshot = { [weak care] in care?.handle($0) }
+        moleWatcher.moPath = { [weak model] in model?.moPath }
+        moleWatcher.isBusy = { [weak model] in model?.isRunning ?? false }
+        model.onTerminalTask = { [weak moleWatcher] task in
+            if task.id == CatTasks.moleUpdate().id { moleWatcher?.watchUpdate() }
+        }
 
         monitor.start(moPath: model.moPath)
         care.start()
         updates.start()
+        moleWatcher.start()
 
         // `kill`, logout and Ctrl-C should still stop Mole's helpers via the
         // normal quit path below.

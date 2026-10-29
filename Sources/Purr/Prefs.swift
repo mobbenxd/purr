@@ -24,6 +24,7 @@ enum Prefs {
     static let lastUpdateCheck = "lastUpdateCheck"
     static let notifiedVersion = "notifiedVersion"
     static let alertTimes = "alertTimes"
+    static let moleJustUpdated = "moleJustUpdated"
 
     static func registerDefaults() {
         UserDefaults.standard.register(defaults: [
