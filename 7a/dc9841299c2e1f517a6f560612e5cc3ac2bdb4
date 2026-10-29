@@ -1,0 +1,102 @@
+Sources/PurrCore/MoleStatus.swift
+  s_f255a70e493070::t_fa39b1a3e3ebce 1-86
+Sources/PurrCore/MoleCLI.swift
+  s_f255a70e493070::t_a053179547532f 1-41
+Tests/PurrCoreTests/Fixtures/clean-dryrun.txt
+  s_f255a70e493070::t_91ff9c61f5f7df 1-8
+Sources/Purr/Notifier.swift
+  s_f255a70e493070::t_ef2c4b5ddec900 1-43
+Sources/PurrCore/SystemStats.swift
+  s_f255a70e493070::t_8cbcfc050f9ebb 1-53
+Sources/Purr/StatusMonitor.swift
+  s_f255a70e493070::t_b1a2561ea44b1a 20-21,55,67,69-72,74,76,113,124
+  s_f255a70e493070::t_9257f21defe319 1-19,22-54,56-66,68,73,75,77-112,114-123,125-137
+Sources/Purr/PurrApp.swift
+  s_f255a70e493070::t_873f41955c36a7 76-79
+  s_f255a70e493070::t_a57ea3ae998b1a 98-99,101-103
+  s_f255a70e493070::t_fb05fde32ce2fa 117
+  s_f255a70e493070::t_d35d8bc9456057 97,100,104-116
+  s_f255a70e493070::t_284a7c0fd36ab9 1,5-26,28,32-36,38,43-65,80-96,118-139
+  s_f255a70e493070::t_e515c1a879140c 66-75
+Sources/PurrCore/GroupProcess.swift
+  s_f255a70e493070::t_a32281c053f639 15,50-51,53-54,57,59-61,116-117,119-125,147,151-154,157-159
+  s_f255a70e493070::t_659c7dda274f3b 1-14,16-49,52,55-56,58,62-115,118,126-146,148-150,155-156,160-175
+Sources/Purr/CareService.swift
+  s_f255a70e493070::t_114c5a0003b37d 87-88,90
+  s_f255a70e493070::t_7d91091eeee51e 1-86,89,91-107
+Sources/PurrCore/SemanticVersion.swift
+  s_f255a70e493070::t_c8f7e361b64ffa 1-18,21-59
+  s_f255a70e493070::t_a32281c053f639 19-20
+  s_f255a70e493070::t_7bd533ff807d10 60-80
+Sources/PurrCore/MoleHistory.swift
+  s_f255a70e493070::t_29decb3785db01 31-35,37
+  s_f255a70e493070::t_208fbb54b7b4ba 1-30,36,38-76
+Sources/Purr/UpdateChecker.swift
+  s_f255a70e493070::t_9fcd8d48d4ca00 78
+  s_f255a70e493070::t_1b0a7c72cafcd1 1-49,52-54,56-61,63,65-77,79-135
+  s_f255a70e493070::t_2d09a76e2309df 50-51,55,62,64
+Sources/Purr/PurrModel.swift
+  s_f255a70e493070::t_5e9c64796d795d 3,7,15-19,24,26,28-29,31-32,37-41,43-58,63-67,69,71-74,76-79,82,85,88-91,97,109-124,130-131,136-140,142-144,147-148,150,152,156,158-159,163-172,175-178,180-185,187-198,200-206,219,222-235,239,242,246,248,250-251,257-258,261-264
+  s_f255a70e493070::t_114c5a0003b37d 80,186,207-218
+Sources/Purr/Prefs.swift
+  s_f255a70e493070::t_82b645b13dc5a7 1-22,24-74
+  s_f255a70e493070::t_114c5a0003b37d 23
+Tests/PurrCoreTests/ParsingTests.swift
+  s_f255a70e493070::t_df197b68bee86b 15
+  s_f255a70e493070::t_2507c24c0bd753 1-14,16-104
+Tests/PurrCoreTests/LogicTests.swift
+  s_f255a70e493070::t_df197b68bee86b 47
+  s_f255a70e493070::t_7bd533ff807d10 32-40
+  s_f255a70e493070::t_48b3ed943d5000 12-15,115-151
+  s_f255a70e493070::t_d1637312186bae 76-82
+  s_f255a70e493070::t_6052a6abbe73d6 1-11,16-31,41-46,48-75,83-114,152-156
+Sources/PurrCore/Health.swift
+  s_f255a70e493070::t_183f129c150a72 1-82
+Tests/PurrCoreTests/Fixtures/status.json
+  s_f255a70e493070::t_91ff9c61f5f7df 1-14
+Tests/PurrCoreTests/Fixtures/purge-dryrun.txt
+  s_f255a70e493070::t_91ff9c61f5f7df 1-5
+Sources/PurrCore/LogBuffer.swift
+  s_f255a70e493070::t_5a2e846e7ecf60 1-52
+Sources/Purr/PanelPages.swift
+  s_f255a70e493070::t_c292ed76b3e09d 1-13,21-34,37-79,81-182,184-185,187-196,208-252
+  s_f255a70e493070::t_353380a896ecbb 35-36,186
+  s_f255a70e493070::t_526dbd3fbfbadc 14-20
+  s_f255a70e493070::t_858384749fbe6c 80,183,197-207
+test.sh
+  s_f255a70e493070::t_e705bfa178fe10 1-13
+Sources/Purr/CatFace.swift
+  s_f255a70e493070::t_27d6ce829772c2 169,173-176,178-185,187,191,195-202,233-234,236-238,242-243,246-281
+  s_f255a70e493070::t_21c2eeb55d4693 186,188-189
+Sources/Purr/PurrPanel.swift
+  s_f255a70e493070::t_7bd533ff807d10 159-161
+  s_f255a70e493070::t_a57ea3ae998b1a 6,12
+  s_f255a70e493070::t_709eeca4cde77e 1,4,7-8,11,16-26,28-31,33-45,47-50,52-57,59-60,68,75,77-80,85-90,114-118,122-123,126-129,146-158,162-178,180,182,186-227,233,243,250-329,346,349-350,363-403,414-415,424-426,439,441-442,448,457-458,468,483-484,493-495,499,504,507-508,510-516,521,525-582
+  s_f255a70e493070::t_822d380662066b 5
+Tests/PurrCoreTests/Fixtures/history.json
+  s_f255a70e493070::t_91ff9c61f5f7df 1-14
+Resources/en.lproj/Localizable.strings
+  s_f255a70e493070::t_d5a4cdcca649fe 1-116
+Sources/PurrCore/OutputParser.swift
+  s_f255a70e493070::t_a2d5aa09904b21 1-30
+Package.swift
+  s_f255a70e493070::t_a4ce2c47303fde 8-17
+Resources/th.lproj/Localizable.strings
+  s_f255a70e493070::t_c06dc0b397e75e 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7adc9841299c2e1f517a6f560612e5cc3ac2bdb4",
+  "prompts": {},
+  "sessions": {
+    "s_f255a70e493070": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e46c1246-2c1b-430f-8891-e69475b64bcf",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "chaipaphat.kae <k.chaipaphat@gmail.com>"
+    }
+  }
+}
