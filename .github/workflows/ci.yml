@@ -1,0 +1,20 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # build.sh uses the commit count as the build number
+      - name: Test
+        run: swift test
+      - name: Check translations
+        run: scripts/check-strings.sh
+      - name: Build app
+        run: ./build.sh

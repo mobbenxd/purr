@@ -2,3 +2,4 @@
 .swiftpm/
 Purr.app/
 .DS_Store
+dist/
