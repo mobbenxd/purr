@@ -63,6 +63,7 @@ final class AppServices: ObservableObject {
         moleWatcher.moPath = { [weak model] in model?.moPath }
         moleWatcher.isBusy = { [weak model] in model?.isRunning ?? false }
         runner.isBusy = { [weak model] in model?.isRunning ?? false }
+        updates.isBusy = { [weak model] in model?.isRunning ?? false }
         model.onTaskLaunched = { [weak moleWatcher] task in
             if task.id == CatTasks.moleUpdate().id { moleWatcher?.watchUpdate() }
         }
