@@ -1,0 +1,19 @@
+CHANGELOG.md
+  s_17caa48fe39b3c::t_133ef8bddd0d81 8-9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c8a1496318f36ba5d40e5298b1263501b070637f",
+  "prompts": {},
+  "sessions": {
+    "s_17caa48fe39b3c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f52db63d-5181-4c4f-a763-07cb628b3479",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "chaipaphat.kae <k.chaipaphat@gmail.com>"
+    }
+  }
+}
