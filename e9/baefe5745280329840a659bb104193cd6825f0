@@ -1,0 +1,14 @@
+VERSION
+  h_1bf7afbd7b87d2 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e9baefe5745280329840a659bb104193cd6825f0",
+  "prompts": {},
+  "humans": {
+    "h_1bf7afbd7b87d2": {
+      "author": "chaipaphat.kae <k.chaipaphat@gmail.com>"
+    }
+  }
+}
