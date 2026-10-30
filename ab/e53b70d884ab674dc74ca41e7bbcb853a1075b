@@ -1,0 +1,24 @@
+CHANGELOG.md
+  s_17caa48fe39b3c::t_73dac5c92e90a1 8-10
+Sources/Purr/RunningCat.swift
+  s_17caa48fe39b3c::t_98a171456667e3 1-45,47,49-178
+  s_17caa48fe39b3c::t_e7776333f418a1 46,48
+Sources/Purr/PurrApp.swift
+  s_17caa48fe39b3c::t_65f2fb851ae379 38,52,65,74,133,147
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "abe53b70d884ab674dc74ca41e7bbcb853a1075b",
+  "prompts": {},
+  "sessions": {
+    "s_17caa48fe39b3c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f52db63d-5181-4c4f-a763-07cb628b3479",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "chaipaphat.kae <k.chaipaphat@gmail.com>"
+    }
+  }
+}
