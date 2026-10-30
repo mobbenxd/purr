@@ -1,0 +1,19 @@
+CLAUDE.md
+  s_8ca175008764b2::t_9a4d670f04b789 1-58
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1fa7de9b0b72e1298ce074c3deee75cfbbc7daf0",
+  "prompts": {},
+  "sessions": {
+    "s_8ca175008764b2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5ae4eaef-c6b8-43d5-9908-c56b01f0c172",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "chaipaphat.kae <k.chaipaphat@gmail.com>"
+    }
+  }
+}
