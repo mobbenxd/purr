@@ -1,4 +1,4 @@
-import Foundation
+import AppKit
 import PurrCore
 
 /// What build this is. `build.sh` writes these into Info.plist; under
@@ -34,8 +34,13 @@ final class UpdateChecker: ObservableObject {
     @Published private(set) var moleLatest: SemanticVersion?
     @Published private(set) var checking = false
     @Published private(set) var lastResult: String?
+    @Published private(set) var install: InstallState = .idle
+
+    enum InstallState: Equatable { case idle, downloading, installing, failed }
 
     var moPath: () -> String? = { nil }
+    /// Relaunching mid-task would kill it, so installing waits for idle.
+    var isBusy: () -> Bool = { false }
 
     private var timer: Timer?
     private let defaults = UserDefaults.standard
@@ -50,6 +55,7 @@ final class UpdateChecker: ObservableObject {
     /// Checks shortly after launch (results are not kept across launches),
     /// then once a day while running.
     func start() {
+        announceIfJustUpdated()
         Task {
             try? await Task.sleep(for: .seconds(8))
             if defaults.bool(forKey: Prefs.checkUpdates) { await check(manual: false) }
@@ -111,8 +117,95 @@ final class UpdateChecker: ObservableObject {
         if defaults.string(forKey: Prefs.notifiedVersion) != version.description {
             defaults.set(version.description, forKey: Prefs.notifiedVersion)
             Notifier.shared.post(id: "update", title: String(localized: "Purr v\(version.description) มาแล้ว 🎁"),
-                                 body: String(localized: "คลิกเพื่อดูว่ามีอะไรใหม่และดาวน์โหลด"),
+                                 body: String(localized: "กด ติดตั้งเลย ในแผง Purr ได้ทันที"),
                                  url: release.htmlUrl)
+        }
+    }
+
+    // MARK: Installing
+
+    /// Whether the new version can replace this app in place: a packaged
+    /// build in a folder we can write to, and not run from a translocated copy.
+    var canInstallInPlace: Bool {
+        let bundle = Bundle.main.bundlePath
+        guard bundle.hasSuffix(".app"), !bundle.contains("/AppTranslocation/"), purrRelease?.zipAsset != nil else { return false }
+        return FileManager.default.isWritableFile(atPath: (bundle as NSString).deletingLastPathComponent)
+    }
+
+    /// Downloads the release, checks it, swaps it in for this app and relaunches.
+    func installUpdate() async {
+        guard let release = purrRelease, let asset = release.zipAsset, canInstallInPlace,
+              install == .idle || install == .failed else { return }
+        let bundle = URL(fileURLWithPath: Bundle.main.bundlePath)
+        // Unpack next to the app so the final move is a rename on the same volume.
+        let staging = bundle.deletingLastPathComponent().appendingPathComponent(".purr-update-\(UUID().uuidString)")
+        do {
+            install = .downloading
+            let (zip, response) = try await URLSession.shared.download(from: asset.browserDownloadUrl)
+            guard (response as? HTTPURLResponse)?.statusCode == 200 else { throw URLError(.badServerResponse) }
+
+            install = .installing
+            try FileManager.default.createDirectory(at: staging, withIntermediateDirectories: true)
+            try await Self.run("/usr/bin/ditto", ["-x", "-k", zip.path, staging.path])
+            let app = staging.appendingPathComponent("Purr.app")
+            let info = Bundle(url: app)
+            guard info?.bundleIdentifier == Bundle.main.bundleIdentifier,
+                  (info?.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String).flatMap(SemanticVersion.init) == release.version
+            else { throw CocoaError(.fileReadCorruptFile) }
+            try await Self.run("/usr/bin/codesign", ["--verify", "--deep", app.path])
+            _ = try? await Self.run("/usr/bin/xattr", ["-dr", "com.apple.quarantine", app.path])
+
+            while isBusy() { try await Task.sleep(for: .seconds(2)) }
+            try relaunch(replacing: bundle, with: app, staging: staging)
+        } catch {
+            try? FileManager.default.removeItem(at: staging)
+            install = .failed
+        }
+    }
+
+    /// After this process exits: move the old app aside, move the new one in
+    /// (restoring the old one if that fails), clean up and reopen.
+    private func relaunch(replacing bundle: URL, with app: URL, staging: URL) throws {
+        UserDefaults.standard.set(purrRelease?.version?.description, forKey: Prefs.purrJustUpdated)
+        let script = """
+            while kill -0 \(getpid()) 2>/dev/null; do sleep 0.2; done
+            old="$0"; new="$1"; staging="$2"; backup="$staging/Purr-old.app"
+            if mv "$old" "$backup"; then
+                if mv "$new" "$old"; then rm -rf "$staging"; else mv "$backup" "$old"; fi
+            fi
+            /usr/bin/open "$old"
+            """
+        let swap = Process()
+        swap.executableURL = URL(fileURLWithPath: "/bin/sh")
+        swap.arguments = ["-c", script, bundle.path, app.path, staging.path]
+        do {
+            try swap.run()
+        } catch {
+            UserDefaults.standard.removeObject(forKey: Prefs.purrJustUpdated)
+            throw error
+        }
+        NSApp.terminate(nil)
+    }
+
+    private func announceIfJustUpdated() {
+        guard let version = defaults.string(forKey: Prefs.purrJustUpdated) else { return }
+        defaults.removeObject(forKey: Prefs.purrJustUpdated)
+        guard AppInfo.version?.description == version else { return }
+        Notifier.shared.post(id: "purr-updated", title: String(localized: "อัปเดต Purr เป็น v\(version) แล้ว 🎉"),
+                             body: String(localized: "ติดตั้งและเปิดใหม่ให้เรียบร้อย"))
+    }
+
+    private static func run(_ tool: String, _ args: [String]) async throws {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: tool)
+        process.arguments = args
+        process.standardOutput = FileHandle.nullDevice
+        process.standardError = FileHandle.nullDevice
+        try await withCheckedThrowingContinuation { (done: CheckedContinuation<Void, Error>) in
+            process.terminationHandler = { p in
+                p.terminationStatus == 0 ? done.resume() : done.resume(throwing: CocoaError(.executableLoad))
+            }
+            do { try process.run() } catch { done.resume(throwing: error) }
         }
     }
 

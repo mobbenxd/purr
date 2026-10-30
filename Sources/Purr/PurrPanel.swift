@@ -147,6 +147,7 @@ private struct CatHeader: View {
 
 private struct UpdateBanner: View {
     @EnvironmentObject var updates: UpdateChecker
+    @EnvironmentObject var model: PurrModel
 
     var body: some View {
         if let release = updates.purrRelease, let version = release.version {
@@ -161,8 +162,22 @@ private struct UpdateBanner: View {
                     Text(verbatim: notes).font(.caption).foregroundStyle(.secondary).lineLimit(3)
                 }
                 HStack {
-                    Button("ดาวน์โหลด") { NSWorkspace.shared.open(release.zipAsset?.browserDownloadUrl ?? release.htmlUrl) }
-                        .buttonStyle(.borderedProminent).tint(catOrange).controlSize(.small)
+                    switch updates.install {
+                    case .downloading, .installing:
+                        ProgressView().controlSize(.small)
+                        Text(updates.install == .downloading ? "กำลังดาวน์โหลด…" : (model.isRunning ? "รอให้งานที่ทำอยู่เสร็จก่อน…" : "กำลังติดตั้ง…"))
+                            .font(.caption).foregroundStyle(.secondary)
+                    case .idle where updates.canInstallInPlace:
+                        Button("ติดตั้งเลย") { Task { await updates.installUpdate() } }
+                            .buttonStyle(.borderedProminent).tint(catOrange).controlSize(.small)
+                            .help(Text("ดาวน์โหลด ติดตั้ง แล้วเปิด Purr ใหม่ให้"))
+                    case .idle, .failed:
+                        if updates.install == .failed {
+                            Text("ติดตั้งเองไม่สำเร็จ").font(.caption).foregroundStyle(.secondary)
+                        }
+                        Button("ดาวน์โหลด") { NSWorkspace.shared.open(release.zipAsset?.browserDownloadUrl ?? release.htmlUrl) }
+                            .buttonStyle(.borderedProminent).tint(catOrange).controlSize(.small)
+                    }
                     Button("ดูรายละเอียด") { NSWorkspace.shared.open(release.htmlUrl) }
                         .controlSize(.small)
                     Spacer()

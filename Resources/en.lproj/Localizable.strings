@@ -15,7 +15,7 @@
 "กำลัง%@… อย่าเพิ่งกวนนะ" = "%@… please don't disturb";
 "กิน CPU มากสุด" = "Top CPU";
 "ข้ามเวอร์ชันนี้" = "Skip this version";
-"คลิกเพื่อดูว่ามีอะไรใหม่และดาวน์โหลด" = "Click to see what's new and download";
+"กด ติดตั้งเลย ในแผง Purr ได้ทันที" = "Hit Install now in the Purr panel";
 "ความจุ %lld%%" = "capacity %lld%%";
 "คะแนนสุขภาพเครื่อง %lld จาก 100" = "Mac health score %lld out of 100";
 "คะแนนสุขภาพเครื่อง (0–100)" = "Mac health score (0–100)";
@@ -119,3 +119,13 @@
 "อัปเดต Mole เป็น %@ แล้ว แมวจะเปิดใหม่เองในไม่กี่วินาที" = "Mole updated to %@. Purr will restart in a few seconds.";
 "Mole %@ เป็นเวอร์ชันล่าสุดแล้ว" = "Mole %@ is already the latest version";
 "แมวสะดุด ลองอ่านข้อความด้านบนดู" = "Something went wrong. Check the messages above.";
+
+/* In-app update install */
+"ติดตั้งเลย" = "Install now";
+"ดาวน์โหลด ติดตั้ง แล้วเปิด Purr ใหม่ให้" = "Downloads, installs and reopens Purr for you";
+"กำลังดาวน์โหลด…" = "Downloading…";
+"กำลังติดตั้ง…" = "Installing…";
+"รอให้งานที่ทำอยู่เสร็จก่อน…" = "Waiting for the current task to finish…";
+"ติดตั้งเองไม่สำเร็จ" = "Couldn't install automatically";
+"อัปเดต Purr เป็น v%@ แล้ว 🎉" = "Purr updated to v%@ 🎉";
+"ติดตั้งและเปิดใหม่ให้เรียบร้อย" = "Installed and reopened for you";
