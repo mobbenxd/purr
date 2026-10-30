@@ -35,7 +35,7 @@ struct PurrApp: App {
                 .environmentObject(services.care)
                 .environmentObject(services.updates)
         } label: {
-            MenuBarLabel(model: services.model, monitor: services.monitor)
+            MenuBarLabel(model: services.model, monitor: services.monitor, runner: services.runner)
         }
         .menuBarExtraStyle(.window)
     }
@@ -49,6 +49,7 @@ final class AppServices: ObservableObject {
     let care = CareService()
     let updates = UpdateChecker()
     let moleWatcher = MoleWatcher()
+    let runner = CatRunner()
 
     init() {
         Notifier.shared.setUp()
@@ -61,6 +62,7 @@ final class AppServices: ObservableObject {
         monitor.onSnapshot = { [weak care] in care?.handle($0) }
         moleWatcher.moPath = { [weak model] in model?.moPath }
         moleWatcher.isBusy = { [weak model] in model?.isRunning ?? false }
+        runner.isBusy = { [weak model] in model?.isRunning ?? false }
         model.onTaskLaunched = { [weak moleWatcher] task in
             if task.id == CatTasks.moleUpdate().id { moleWatcher?.watchUpdate() }
         }
@@ -69,6 +71,7 @@ final class AppServices: ObservableObject {
         care.start()
         updates.start()
         moleWatcher.start()
+        runner.start()
 
         // `kill`, logout and Ctrl-C should still stop Mole's helpers via the
         // normal quit path below.
@@ -127,6 +130,7 @@ final class AppServices: ObservableObject {
 private struct MenuBarLabel: View {
     @ObservedObject var model: PurrModel
     @ObservedObject var monitor: StatusMonitor
+    @ObservedObject var runner: CatRunner
     @AppStorage(Prefs.moodIcon) private var moodIcon = true
 
     private var mood: CatMood {
@@ -140,7 +144,7 @@ private struct MenuBarLabel: View {
     }
 
     var body: some View {
-        Image(nsImage: CatFace.menuBarImage(mood: mood))
+        Image(nsImage: RunningCat.menuBarImage(frame: runner.frame, mood: mood))
             .accessibilityLabel(Text("Purr \(monitor.health)"))
     }
 }
